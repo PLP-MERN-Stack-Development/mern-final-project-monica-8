@@ -9,6 +9,12 @@
     "dev": "npm run server",
     "test": "jest --detectOpenHandles --forceExit"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "<rootDir>/tests/**/*.js"
+    ]
+  },
   "keywords": [
     "mern",
     "recipe",

@@ -1,37 +1,51 @@
-// middleware/authMiddleware.js
+// backend/middleware/authMiddleware.js
 
 const jwt = require('jsonwebtoken');
-const asyncHandler = require('express-async-handler'); // Simple wrapper for async functions to catch errors
-const User = require('../models/userModel');
+const asyncHandler = require('express-async-handler');
+const User = require('../models/userModel'); // This path might need to be adjusted!
+
+// NOTE: Adjust the path for the User model based on your structure.
+// If models is at the top level (backend/models), use:
+// const User = require('../models/userModel'); 
+// OR if models is inside server (backend/server/models), use:
+// const User = require('./models/userModel'); 
+// Assuming it's at the top level relative to the middleware folder:
+// const User = require('../models/userModel'); 
 
 const protect = asyncHandler(async (req, res, next) => {
     let token;
 
-    // Check for the 'Bearer <token>' format in the Authorization header
+    // Check for the token in the headers
     if (
         req.headers.authorization &&
         req.headers.authorization.startsWith('Bearer')
     ) {
         try {
-            // 1. Get token from header (split "Bearer" from the token string)
+            // Get token from header (it looks like: "Bearer [token]")
             token = req.headers.authorization.split(' ')[1];
 
-            // 2. Verify token
+            // Verify token and decode the payload (which contains the user ID)
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            // 3. Get user from the token payload (it contains the user ID)
-            // We select everything EXCEPT the password field
+            
+            // Get user from the token payload ID.
+            // Select('-password') ensures we don't return the hashed password.
             req.user = await User.findById(decoded.id).select('-password');
 
-            // 4. Continue to the next middleware or controller function
-            next();
+            // If a user is found, proceed to the next middleware/controller
+            if (req.user) {
+                next();
+            } else {
+                res.status(401);
+                throw new Error('Not authorized, user not found');
+            }
         } catch (error) {
             console.error(error);
-            res.status(401);
+            res.status(401); // Unauthorized
             throw new Error('Not authorized, token failed');
         }
     }
 
+    // If no token is found in the header
     if (!token) {
         res.status(401);
         throw new Error('Not authorized, no token');
@@ -39,5 +53,3 @@ const protect = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = { protect };
-
-// Don't forget to install express-async-handler: npm install express-async-handler

@@ -1,35 +1,27 @@
-// backend/routes/recipeRoutes.js (FINAL VERSION)
+// backend/server/routes/commentRoutes.js
 
 const express = require('express');
 const router = express.Router();
 
-// --- EXISTING IMPORTS ---
-const { 
-    getRecipes, 
-    getRecipe, 
-    createRecipe, 
-    updateRecipe, 
-    deleteRecipe 
-} = require('../controllers/recipeController');
+const {
+    getComments,
+    setComment,
+    updateComment,
+    deleteComment,
+} = require('../controllers/commentController');
 
+// Import the protect middleware (adjust path if needed)
 const { protect } = require('../../middleware/authMiddleware');
 
-// --- NEW IMPORT ---
-const { getRecipeComments } = require('../controllers/commentController'); 
+// Route for listing all comments on a recipe (GET) and adding a new comment (POST)
+// NOTE: GET /api/comments/:recipeId is often public, but POST must be private.
+router.route('/:recipeId')
+    .get(getComments)  // GET: Public access to read comments
+    .post(protect, setComment); // POST: Private access (requires login)
 
-// === RECIPE CRUD ROUTES ===
-router.route('/')
-    .get(getRecipes) 
-    .post(protect, createRecipe); 
-
+// Routes for updating and deleting a specific comment by its ID
 router.route('/:id')
-    .get(getRecipe)
-    .put(protect, updateRecipe)
-    .delete(protect, deleteRecipe);
-
-// === NEW COMMENT RETRIEVAL ROUTE ===
-// Maps to: GET /api/recipes/:recipeId/comments
-router.route('/:recipeId/comments').get(getRecipeComments); 
-// 
+    .put(protect, updateComment)
+    .delete(protect, deleteComment);
 
 module.exports = router;

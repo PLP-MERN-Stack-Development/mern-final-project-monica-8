@@ -52,5 +52,15 @@ const io = new Server(server, {
 // 8. Socket.io Handler 
 require('./socketHandler')(io);
 
+
 // 9. Listen on the new HTTP server
+
 server.listen(PORT, () => console.log(`Server started on port ${PORT} (HTTP & Socket.io)`.cyan.bold));
+
+
+// To this conditional block:
+if (process.env.NODE_ENV !== 'test') {
+    server.listen(PORT, () => console.log(`Server started on port ${PORT} (HTTP & Socket.io)`.cyan.bold));
+}
+
+module.exports = app;
