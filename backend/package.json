@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
+    "dev": "npm run server",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "keywords": [

@@ -24,13 +24,13 @@ app.use(express.urlencoded({ extended: false })); // For form data
 // 5. Define Routes
 
 // User Routes
-app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/users', require('./server/routes/userRoutes'));
 
 // Recipe Routes 
-app.use('/api/recipes', require('./routes/recipeRoutes'));
+app.use('/api/recipes', require('./server/routes/recipeRoutes'));
 
 // Dedicated Comment Routes 
-app.use('/api/comments', require('./routes/commentRoutes'));
+app.use('/api/comments', require('./server/routes/commentRoutes'));
 
 // 6. Error Handling Middleware
 app.use(errorHandler);

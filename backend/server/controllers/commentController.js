@@ -1,8 +1,8 @@
 // controllers/commentController.js
 
 const asyncHandler = require('express-async-handler');
-const Comment = require('../models/commentModel');
-const Recipe = require('../models/recipeModel');
+const Comment = require('../../models/commentModel');
+const Recipe = require('../../models/recipeModel');
 // @desc    Get all comments for a specific recipe
 // @route   GET /api/recipes/:recipeId/comments
 // @access  Public

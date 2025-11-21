@@ -12,7 +12,7 @@ const {
     deleteRecipe 
 } = require('../controllers/recipeController');
 
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../../middleware/authMiddleware');
 
 // --- NEW IMPORT ---
 const { getRecipeComments } = require('../controllers/commentController'); 

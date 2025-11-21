@@ -3,17 +3,25 @@
 const express = require('express');
 const router = express.Router();
 
-// 1. Import Controller Functions
+// import controller functions
 const {
-    getRecipes,
-    getRecipe,
-    createRecipe,
-    updateRecipe,
-    deleteRecipe,
+  getRecipes,
+  getRecipe,
+  createRecipe,
+  updateRecipe,
+  deleteRecipe,
 } = require('../controllers/recipeController');
 
+router.get('/', getRecipes);
+router.get('/:id', getRecipe);
+router.post('/', createRecipe);
+router.put('/:id', updateRecipe);
+router.delete('/:id', deleteRecipe);
+
+module.exports = router;
+
 // 2. Import Security Middleware
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../../middleware/authMiddleware');
 
 // 3. Define Routes
 

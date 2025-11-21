@@ -7,7 +7,7 @@ const {
     loginUser,
     getMe,
 } = require('../controllers/userController');
-const { protect } = require('../middleware/authMiddleware'); // Import middleware
+const { protect } = require('../../middleware/authMiddleware'); // Import middleware
 
 // Public routes (no token required)
 router.post('/', registerUser); // POST /api/users

@@ -1,15 +1,15 @@
-// controllers/recipeController.js
-
 const asyncHandler = require('express-async-handler');
-const Recipe = require('../models/recipeModel');
+const Recipe = require('../../models/recipeModel');
 
-// @desc    Get all recipes//
-// controllers/recipeController.js
+// @desc    Get all recipes
+// @route   GET /api/recipes
+// @access  Public
+const getRecipes = asyncHandler(async (req, res) => {
+    const recipes = await Recipe.find().populate('user', 'name');
+    res.status(200).json(recipes);
+});
 
-const asyncHandler = require('express-async-handler');
-const Recipe = require('../models/recipeModel');
-
-// @desc    Get single recipe
+// @desc    Get single recipe by id
 // @route   GET /api/recipes/:id
 // @access  Public
 const getRecipe = asyncHandler(async (req, res) => {
@@ -25,19 +25,17 @@ const getRecipe = asyncHandler(async (req, res) => {
 
 // @desc    Create new recipe
 // @route   POST /api/recipes
-// @access  Private (Requires JWT Token)
+// @access  Private
 const createRecipe = asyncHandler(async (req, res) => {
     const { title, description, ingredients, instructions, prepTime, category, imageUrl } = req.body;
 
-    // Basic Input Validation Check
     if (!title || !description || !ingredients || !instructions || !prepTime || !category) {
         res.status(400);
         throw new Error('Please include all required recipe fields.');
     }
 
     const recipe = await Recipe.create({
-        // Link the recipe to the authenticated user
-        user: req.user.id,
+        user: req.user.id,  // assuming req.user is set from auth middleware
         title,
         description,
         ingredients,
@@ -50,7 +48,7 @@ const createRecipe = asyncHandler(async (req, res) => {
     res.status(201).json(recipe);
 });
 
-// @desc    Update a recipe
+// @desc    Update a recipe by id
 // @route   PUT /api/recipes/:id
 // @access  Private
 const updateRecipe = asyncHandler(async (req, res) => {
@@ -61,7 +59,6 @@ const updateRecipe = asyncHandler(async (req, res) => {
         throw new Error('Recipe not found');
     }
 
-    // Authorization Check: Check if the logged-in user is the recipe owner
     if (recipe.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error('User not authorized to update this recipe');
@@ -71,15 +68,15 @@ const updateRecipe = asyncHandler(async (req, res) => {
         req.params.id,
         req.body,
         {
-            new: true, 
-            runValidators: true, // Run Mongoose validators on update
+            new: true,
+            runValidators: true,
         }
     );
 
     res.status(200).json(updatedRecipe);
 });
 
-// @desc    Delete a recipe
+// @desc    Delete a recipe by id
 // @route   DELETE /api/recipes/:id
 // @access  Private
 const deleteRecipe = asyncHandler(async (req, res) => {
@@ -90,7 +87,6 @@ const deleteRecipe = asyncHandler(async (req, res) => {
         throw new Error('Recipe not found');
     }
 
-    // Authorization Check: Check if the logged-in user is the recipe owner
     if (recipe.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error('User not authorized to delete this recipe');
