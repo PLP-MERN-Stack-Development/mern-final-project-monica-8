@@ -1,0 +1,288 @@
+:root {
+  font-family: sans-serif;
+  line-height: 1.5;
+  color-scheme: light dark;
+  color: #333;
+  background-color: #f7f7f7;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.2em;
+  line-height: 1.1;
+  color: #2a6f8a;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #c75b22;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+}
+
+.recipe-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  text-align: left;
+  padding-top: 10px;
+}
+
+.recipe-card {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: white;
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.recipe-card:hover {
+  transform: translateY(-3px);
+}
+
+.recipe-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 15px;
+}
+
+.recipe-card h2 {
+  color: #c75b22;
+  margin-top: 0;
+  font-size: 1.5em;
+}
+
+.id-text {
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 10px;
+  word-break: break-word;
+}
+
+/* Card Header */
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-header h2 {
+  flex-grow: 1;
+  order: 3;
+  text-align: right;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+/* Buttons */
+
+.delete-button,
+.edit-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  font-weight: bold;
+  align-self: flex-start;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.delete-button {
+  color: #c75b22;
+  font-size: 1.8em;
+  order: 1;
+}
+
+.delete-button:hover {
+  color: red;
+}
+
+.edit-button {
+  background-color: #5c7cfa;
+  color: white;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  order: 2;
+  margin-top: 5px;
+}
+
+.edit-button:hover {
+  background-color: #4a66d8;
+}
+
+/* Forms */
+
+.form-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-container h3 {
+  color: #c75b22;
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.form-container form {
+  display: grid;
+  gap: 10px;
+}
+
+.form-container label {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.form-container input,
+.form-container textarea,
+.form-container select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-container textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-container button {
+  background-color: #2a6f8a;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1em;
+  margin-top: 20px;
+}
+
+.form-container button:hover {
+  background-color: #1e5a6b;
+}
+
+.error-message {
+  color: red;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.success-message {
+  color: green;
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* Edit Form */
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border: 2px solid #5c7cfa;
+  border-radius: 8px;
+  background-color: #f0f4ff;
+}
+
+.edit-form label,
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+  margin-bottom: 5px;
+}
+
+.edit-form h4 {
+  margin-top: 0;
+  color: #5c7cfa;
+}
+
+.edit-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.save-button,
+.cancel-button {
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.save-button {
+  background-color: #4caf50;
+  color: white;
+}
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+}
+.cancel-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Loading and Error Messages */
+
+.loading,
+.error {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2em;
+}
+
+.error {
+  color: #f44336;
+  background-color: #ffe0e0;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+}
