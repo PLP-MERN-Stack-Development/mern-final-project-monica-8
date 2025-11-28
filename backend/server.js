@@ -2,34 +2,37 @@
 
 const express = require('express');
 const dotenv = require('dotenv').config();
-const connectDB = require('./config/db');
+const connectDB = require('./config/db'); 
 
-// FIX 1: Only connect to the database if NOT in a test environment
+// CRITICAL FIX: Ensure errorHandler is destructured correctly (matching the export)
+const { errorHandler } = require('./middleware/errorMiddleware'); 
+
+const PORT = process.env.PORT || 5000;
+
+// Connect to the database
 if (process.env.NODE_ENV !== 'test') {
     connectDB();
 }
 
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Main Routes
+// Routes
 app.use('/api/users', require('./server/routes/userRoutes')); 
 app.use('/api/recipes', require('./server/routes/recipeRoutes'));
 
-// Error handler 
-// The errorMiddleware file is in './middleware/errorMiddleware', which is correct relative to server.js
-app.use(require('./middleware/errorMiddleware'));
+// Error handler (Must be last middleware)
+app.use(errorHandler); // This now receives a function
 
-const PORT = process.env.PORT || 5000;
-
-// Conditional Listening: Only start the server if NOT in test environment
+// Start Server: Only start listening if NOT in the test environment.
 if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
 }
 
-// CRITICAL FIX: Export ONLY the app instance for Supertest
+// Export the app instance for testing purposes (Supertest)
 module.exports = app;

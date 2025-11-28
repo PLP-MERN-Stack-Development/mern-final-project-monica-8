@@ -3,7 +3,6 @@
 const express = require('express');
 const router = express.Router();
 
-// FIX: Ensure correct object destructuring for imported controllers
 const {
     getRecipes,
     createRecipe,
@@ -16,7 +15,7 @@ const {
     getComments,
 } = require('../controllers/commentController');
 
-// Ensure correct path for middleware: '../../middleware/authMiddleware'
+// The correct path is '../../middleware/authMiddleware'
 const { protect } = require('../../middleware/authMiddleware'); 
 
 // Standard Recipe Routes (using /api/recipes)

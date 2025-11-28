@@ -1,17 +1,19 @@
 // backend/middleware/errorMiddleware.js
 
 const errorHandler = (err, req, res, next) => {
-    // Determine the correct status code. If a status code was set, use it; otherwise, default to 500.
-    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-    
+    // Determine the status code: use the status set by the error, or default to 500
+    const statusCode = res.statusCode ? res.statusCode : 500;
+
     res.status(statusCode);
 
     res.json({
         message: err.message,
-        // Only include the stack trace if not in a production environment
-        stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+        // Only show the stack trace if we are NOT in production
+        stack: process.env.NODE_ENV !== 'production' ? err.stack : null,
     });
 };
 
-// Must export the middleware function directly.
-module.exports = errorHandler;
+// CRITICAL FIX: Ensure the errorHandler is exported inside an object {}
+module.exports = {
+    errorHandler,
+};
