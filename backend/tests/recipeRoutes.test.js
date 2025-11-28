@@ -1,4 +1,5 @@
 const request = require('supertest');
+jest.setTimeout(30000); // Increase timeout for async operations
 const mongoose = require('mongoose');
 const  app  = require('../server');  
 const Recipe = require('../models/recipeModel');

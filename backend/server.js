@@ -3,10 +3,7 @@
 const express = require('express');
 const dotenv = require('dotenv').config();
 const connectDB = require('./config/db'); 
-
-// CRITICAL FIX: Ensure errorHandler is destructured correctly (matching the export)
-const { errorHandler } = require('./middleware/errorMiddleware'); 
-
+const errorHandler = require('./middleware/errorMiddleware');
 const PORT = process.env.PORT || 5000;
 
 // Connect to the database
