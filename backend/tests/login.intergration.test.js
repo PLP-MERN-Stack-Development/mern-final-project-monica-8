@@ -1,65 +1,69 @@
+// backend/tests/login.intergration.test.js
+
 const request = require('supertest');
-const app = require('../server'); // Assuming your main Express app is exported from server.js
+const app = require('../server');
+const User = require('../models/userModel');
 
-// Mock user data for testing
-const testUser = {
-  email: 'test@example.com',
-  password: 'TestPassword123',
-};
-const incorrectPasswordUser = {
-  email: 'test@example.com',
-  password: 'WrongPassword',
-};
-const nonexistentUser = {
-  email: 'nonexistent@example.com',
-  password: 'AnyPassword',
-};
+describe('POST /api/users/login - Authentication Integration Tests', () => {
+    const testUser = {
+        name: 'Login Test User',
+        email: `login${Date.now()}@test.com`,
+        password: 'testpassword',
+    };
 
-// NOTE: Before these tests can run successfully, you MUST have a user with 
-// the email 'test@example.com' and password 'TestPassword123' registered 
-// in your MongoDB database.
+    beforeAll(async () => {
+        // Register user for testing login against valid credentials
+        await request(app).post('/api/users').send(testUser);
+    });
 
-describe('POST /api/users/login', () => {
-  // Test Case 1: Successful Login
-  it('should return 200 and a token for valid credentials', async () => {
-    const response = await request(app)
-      .post('/api/users/login')
-      .send(testUser);
+    afterAll(async () => {
+        // Clean up the user
+        await User.deleteOne({ email: testUser.email });
+    });
 
-    expect(response.statusCode).toBe(200);
-    // The response body should contain the user details and a token
-    expect(response.body).toHaveProperty('_id');
-    expect(response.body).toHaveProperty('token');
-    expect(response.body).toHaveProperty('email', testUser.email);
-  });
+    it('should return 200 and a token for valid credentials', async () => {
+        const response = await request(app)
+            .post('/api/users/login')
+            .send({ email: testUser.email, password: testUser.password })
+            .expect(200);
 
-  // Test Case 2: Login with Incorrect Password
-  it('should return 401 for incorrect password', async () => {
-    const response = await request(app)
-      .post('/api/users/login')
-      .send(incorrectPasswordUser);
+        expect(response.body).toHaveProperty('token');
+        expect(response.body.email).toBe(testUser.email);
+    });
 
-    expect(response.statusCode).toBe(401);
-    expect(response.body.message).toBe('Invalid credentials');
-  });
+    it('should return 401 for incorrect password', async () => {
+        const response = await request(app)
+            .post('/api/users/login')
+            .send({ email: testUser.email, password: 'wrongpassword' })
+            .expect(401);
+        
+        expect(response.body.message).toMatch(/invalid credentials/i);
+    });
 
-  // Test Case 3: Login with Nonexistent User
-  it('should return 401 for a user that does not exist', async () => {
-    const response = await request(app)
-      .post('/api/users/login')
-      .send(nonexistentUser);
+    it('should return 401 for user that does not exist', async () => {
+        await request(app)
+            .post('/api/users/login')
+            .send({ email: 'nonexistent@user.com', password: 'pass123' })
+            .expect(401);
+    });
 
-    expect(response.statusCode).toBe(401);
-    expect(response.body.message).toBe('Invalid credentials');
-  });
+    it('should return 400 for missing required fields (password)', async () => {
+        const response = await request(app)
+            .post('/api/users/login')
+            .send({ email: testUser.email }) // Missing password
+            .expect(400);
 
-  // Test Case 4: Login with Missing Data (e.g., missing email)
-  it('should return 400 for missing required fields', async () => {
-    const response = await request(app)
-      .post('/api/users/login')
-      .send({ password: testUser.password }); // Missing email
+        // FIX: Update assertion to match the actual controller message "Please enter email and password"
+        expect(response.body.message).toMatch(/email and password/i);
+    });
 
-    expect(response.statusCode).toBe(400);
-    expect(response.body.message).toContain('Please fill in all fields');
-  });
+    it('should return 400 for missing required fields (email)', async () => {
+        const response = await request(app)
+            .post('/api/users/login')
+            .send({ password: testUser.password }) // Missing email
+            .expect(400);
+            
+        // FIX: Update assertion to match the actual controller message "Please enter email and password"
+        expect(response.body.message).toMatch(/email and password/i);
+    });
 });

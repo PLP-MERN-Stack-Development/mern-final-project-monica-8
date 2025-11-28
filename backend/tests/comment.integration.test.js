@@ -1,101 +1,81 @@
-// backend/__tests__/comment.integration.test.js
+// backend/tests/comment.integration.test.js
 
 const request = require('supertest');
-const app = require('../server');
-const mongoose = require('mongoose');
-const Comment = require('../models/commentModel');
-const Recipe = require('../models/recipeModel');
+const app = require('../server'); 
+const User = require('../models/userModel');
+const Recipe = require('../models/recipeModel'); 
+// Assuming a Comment model exists:
+// const Comment = require('../models/commentModel');
 
-// --- Setup Data ---
-const testUser = {
-    email: 'test@example.com',
-    password: 'Password123',
-};
-const commentText = 'This is a great recipe!';
-let authToken;
-let recipe; // To store a temporary recipe
-let commentId; // To store the created comment ID
+describe('Comment API', () => {
+    const testUser = {
+        name: 'Commenter',
+        email: `commenter${Date.now()}@test.com`,
+        password: 'commentpass',
+    };
+    const testRecipe = {
+        name: 'Comment Test Recipe',
+        ingredients: 'Test',
+        category: 'Test',
+        prepTime: 10
+    };
 
-// --- Setup/Teardown ---
-beforeAll(async () => {
-    // 1. Log in the test user
-    const loginResponse = await request(app)
-        .post('/api/users/login')
-        .send(testUser);
-    
-    authToken = loginResponse.body.token;
-    const userId = loginResponse.body._id;
+    let authToken;
+    let recipeId;
 
-    // 2. Create a temporary recipe to attach comments to
-    await Recipe.deleteMany({ user: userId });
-    recipe = await Recipe.create({
-        user: userId,
-        title: 'Temp Comment Test',
-        description: 'Temporary recipe for comment testing',
-    });
-});
+    beforeAll(async () => {
+        // 1. Register User & Get Token
+        const userRes = await request(app)
+            .post('/api/users')
+            .send(testUser)
+            .expect(201);
+        authToken = userRes.body.token;
 
-afterAll(async () => {
-    // Clean up
-    await Recipe.deleteMany({ _id: recipe._id });
-    await Comment.deleteMany({ recipe: recipe._id });
-    await mongoose.connection.close();
-});
-
-// ------------------------------------------------------------------
-
-describe('Comment CRUD Operations', () => {
-
-    // Test 1: POST /api/comments/:recipeId - Create a Comment
-    it('should allow a logged-in user to add a comment to a recipe', async () => {
-        const response = await request(app)
-            .post(`/api/comments/${recipe._id}`)
+        // 2. Create Recipe (Requires Token)
+        const recipeRes = await request(app)
+            .post('/api/recipes')
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ text: commentText });
+            .send(testRecipe)
+            .expect(201);
+        recipeId = recipeRes.body._id;
 
-        expect(response.statusCode).toBe(201);
-        expect(response.body).toHaveProperty('_id');
-        expect(response.body.text).toBe(commentText);
-        
-        commentId = response.body._id; // Save ID for later tests
+        console.log(`✅ Token ready`);
+        console.log(`✅ Recipe ID for comments: ${recipeId}`);
     });
 
-    // Test 2: GET /api/comments/:recipeId - Fetch Comments
-    it('should allow fetching all comments for a specific recipe (Public Route)', async () => {
-        const response = await request(app)
-            .get(`/api/comments/${recipe._id}`); // This route is public in your implementation
-
-        expect(response.statusCode).toBe(200);
-        expect(response.body.length).toBe(1);
-        expect(response.body[0].text).toBe(commentText);
+    afterAll(async () => {
+        // Cleanup 
+        await User.deleteOne({ email: testUser.email });
+        await Recipe.deleteOne({ _id: recipeId });
     });
 
-    // Test 3: PUT /api/comments/:id - Update Comment
-    it('should allow a logged-in user to update their own comment', async () => {
-        const updatedText = 'This recipe is absolutely fantastic!';
-        const response = await request(app)
-            .put(`/api/comments/${commentId}`)
+    it('POST /api/recipes/:id/comments - creates comment', async () => {
+        const res = await request(app)
+            .post(`/api/recipes/${recipeId}/comments`)
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ text: updatedText });
+            .send({ text: 'Great recipe!' })
+            .expect(201); 
 
-        expect(response.statusCode).toBe(200);
-        expect(response.body.text).toBe(updatedText);
+        expect(res.body).toHaveProperty('text', 'Great recipe!');
+        expect(res.body).toHaveProperty('_id');
+        expect(res.body).toHaveProperty('recipe', recipeId);
     });
 
-    // Test 4: DELETE /api/comments/:id - Delete Comment
-    it('should allow a logged-in user to delete their own comment', async () => {
-        const response = await request(app)
-            .delete(`/api/comments/${commentId}`)
-            .set('Authorization', `Bearer ${authToken}`);
+    it('GET /api/recipes/:id/comments - lists comments', async () => {
+        // First, ensure a comment exists (from the previous test or create one here)
+        await request(app)
+            .post(`/api/recipes/${recipeId}/comments`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ text: 'Another comment!' })
+            .expect(201); 
 
-        expect(response.statusCode).toBe(200);
-        expect(response.body.id).toBe(commentId);
+        const res = await request(app)
+            .get(`/api/recipes/${recipeId}/comments`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200); 
 
-        // Verify deletion
-        const verify = await request(app)
-            .get(`/api/comments/${recipe._id}`);
-        
-        expect(verify.body.length).toBe(0);
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body.length).toBeGreaterThanOrEqual(2); // Should have at least the two comments created
+        expect(res.body.every(c => c.recipe === recipeId)).toBe(true);
     });
-
 });

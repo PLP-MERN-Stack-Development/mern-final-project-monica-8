@@ -1,24 +1,31 @@
-// routes/recipeRoutes.js
+// backend/server/routes/recipeRoutes.js
 
 const express = require('express');
 const router = express.Router();
 
-// import controller functions
+// FIX: Ensure correct object destructuring for imported controllers
 const {
-  getRecipes,
-  setRecipe,
-  updateRecipe,
-  deleteRecipe,
+    getRecipes,
+    createRecipe,
+    updateRecipe,
+    deleteRecipe,
 } = require('../controllers/recipeController');
 
-// 2. Import protect  Middleware
-const { protect } = require('../../middleware/authMiddleware');
+const {
+    createComment,
+    getComments,
+} = require('../controllers/commentController');
 
-// Combine GET and POST routes, applying 'protect' to both
-router.route('/').get(protect, getRecipes).post(protect, setRecipe);
+// Ensure correct path for middleware: '../../middleware/authMiddleware'
+const { protect } = require('../../middleware/authMiddleware'); 
 
-// Combine PUT and DELETE routes, applying 'protect' to both
+// Standard Recipe Routes (using /api/recipes)
+router.route('/').get(protect, getRecipes).post(protect, createRecipe);
 router.route('/:id').put(protect, updateRecipe).delete(protect, deleteRecipe);
 
-module.exports = router;
+// Nested Comment Routes (using /api/recipes/:recipeId/comments)
+router.route('/:recipeId/comments')
+    .post(protect, createComment)
+    .get(protect, getComments); 
 
+module.exports = router;

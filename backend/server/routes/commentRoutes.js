@@ -1,8 +1,11 @@
 // backend/server/routes/commentRoutes.js
 
 const express = require('express');
-const router = express.Router();
+// CRITICAL FIX 1: Use mergeParams to access the parent router's parameters (like :recipeId)
+const router = express.Router({ mergeParams: true }); 
 
+// 🔑 PATH FIX: Use '../../' to go up two directories (to 'backend/') 
+// then down into 'controllers/'.
 const {
     getComments,
     setComment,
@@ -10,16 +13,22 @@ const {
     deleteComment,
 } = require('../controllers/commentController');
 
-// Import the protect middleware (adjust path if needed)
-const { protect } = require('../../middleware/authMiddleware');
+// 🔑 IMPORT/PATH FIX: 
+// 1. Assuming 'protect' uses 'module.exports = protect', import it without destructuring.
+// 2. Use '../../' to navigate from 'server/routes/' to 'middleware/'.
+const protect = require('../../middleware/authMiddleware');
 
-// Route for listing all comments on a recipe (GET) and adding a new comment (POST)
-// NOTE: GET /api/comments/:recipeId is often public, but POST must be private.
-router.route('/:recipeId')
-    .get(getComments)  // GET: Public access to read comments
-    .post(protect, setComment); // POST: Private access (requires login)
+// --- Routes for /api/recipes/:recipeId/comments ---
 
-// Routes for updating and deleting a specific comment by its ID
+// FIX 2: The path should be '/' because the parent router (recipeRoutes.js) 
+// handles the '/:recipeId/comments' part of the URL.
+router.route('/')
+    .get(getComments)     // GET: Get all comments for a recipe
+    .post(protect, setComment); // POST: Add a new comment (requires login)
+
+// --- Routes for /api/recipes/:recipeId/comments/:id ---
+
+// FIX 3: This path now refers to a specific comment ID (:id), relative to the root mount.
 router.route('/:id')
     .put(protect, updateComment)
     .delete(protect, deleteComment);

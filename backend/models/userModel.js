@@ -1,23 +1,26 @@
-// models/userModel.js
+// backend/models/userModel.js (Example Structure)
 
 const mongoose = require('mongoose');
 
-const userSchema = mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'Please add a name'],
+const userSchema = mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [true, 'Please add a name'],
+        },
+        email: {
+            type: String,
+            required: [true, 'Please add an email'],
+            unique: true,
+        },
+        password: {
+            type: String,
+            required: [true, 'Please add a password'],
+        },
     },
-    email: {
-        type: String,
-        required: [true, 'Please add an email'],
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: [true, 'Please add a password'],
-    },
-}, {
-    timestamps: true,
-});
+    {
+        timestamps: true,
+    }
+);
 
 module.exports = mongoose.model('User', userSchema);

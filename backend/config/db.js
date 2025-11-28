@@ -1,22 +1,22 @@
-// config/db.js
-
 const mongoose = require('mongoose');
-// You also need to require 'colors' here if you want to use the .cyan.underline.bold styling
-// const colors = require('colors'); 
+require('dotenv').config(); // make sure dotenv is called once at app start
 
 const connectDB = async () => {
-    try {
-        // CORRECT: Pass the environment variable directly.
-        // Node.js already loaded this value from your .env file via dotenv.config() in server.js.
-        const conn = await mongoose.connect(process.env.MONGO_URI); 
+  try {
+    // Select correct URI depending on environment
+    const mongoUri = process.env.NODE_ENV === 'test' ? process.env.MONGO_URI_TEST : process.env.MONGO_URI;
+    if (!mongoUri) throw new Error('MongoDB URI not set in environment variables!');
+    
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+    });
 
-        console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline.bold);
-    } catch (error) {
-        // Make sure to handle the case where the URI is missing or incorrect
-        console.error(`Error: ${error.message}`.red.underline.bold);
-        // Exit process with failure
-        process.exit(1);
-    }
+    console.log(`✅ MongoDB Connected: ${mongoose.connection.host}`);
+  } catch (error) {
+    console.error('❌ MongoDB Connection Error:', error.message);
+    process.exit(1);
+  }
 };
 
 module.exports = connectDB;

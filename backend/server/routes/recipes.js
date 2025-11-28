@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Recipe = require('../../models/Recipe');
 
 // Middleware to get a single recipe by ID
 const getRecipe = async (req, res, next) => {

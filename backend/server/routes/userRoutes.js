@@ -1,24 +1,19 @@
-// routes/userRoutes.js
+// backend/server/routes/userRoutes.js
 
 const express = require('express');
 const router = express.Router();
-
 const {
     registerUser,
     loginUser,
     getMe,
-} = require('../controllers/userController');
-const { protect } = require('../../middleware/authMiddleware'); // Import middleware
+} = require('../controllers/userController'); // Ensure these are exported correctly
 
-// Public routes (no token required)
-// POST /api/users (Registration)
+// Ensure correct path for middleware: '../../middleware/authMiddleware'
+const { protect } = require('../../middleware/authMiddleware'); 
+
+// Standard User Routes
 router.post('/', registerUser);
-
-// POST /api/users/login (Login)
 router.post('/login', loginUser);
-
-// Private route (token required)
-router.get('/me', protect, getMe); // GET /api/users/me
-
+router.get('/me', protect, getMe);
 
 module.exports = router;
