@@ -1,116 +1,199 @@
-import { useState } from 'react';
-import api from '../api/config';
+// src/components/RecipeForm.jsx
 
-// The handleAddRecipe prop will be used to update the main App component 
-// after a successful POST request.
-const RecipeForm = ({ handleAddRecipe }) => {
-  const [recipeName, setRecipeName] = useState('');
-  const [instructions, setInstructions] = useState('');
-  const [category, setCategory] = useState('General'); // Default value
-  const [imageUrl, setImageUrl] = useState(''); // new imageUrl state
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+import React, { useState } from 'react';
+import { useNotification } from '../context/NotificationContext'; 
 
-  // Basic URL validation helper
-  const isValidHttpUrl = (string) => {
-    let url;
-    try {
-      url = new URL(string);
-    } catch (_) {
-      return false;
-    }
-    return url.protocol === "http:" || url.protocol === "https:";
-  }
+// Assuming you have a custom input component or just use the Tailwind classes defined in index.css
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default browser refresh
-    setError(null);
-    setSuccess(false);
+function RecipeForm({ onSubmit, onCancel, initialData = {} }) {
+    
+    // 🎯 Use the hook to access the notification function
+    const { showNotification } = useNotification(); 
+    
+    // --- State Management ---
+    const [formData, setFormData] = useState({
+        name: initialData.name || '',
+        prepTime: initialData.prepTime || '',
+        ingredients: initialData.ingredients || '',
+        category: initialData.category || 'Dinner', // Set a default category
+    });
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false); // For loading state (UX enhancement)
 
-    // Validate imageUrl if provided
-    if (imageUrl && !isValidHttpUrl(imageUrl)) {
-      setError('Please enter a valid image URL or leave blank.');
-      return;
-    }
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prevData => ({ ...prevData, [name]: value }));
+        
+        // Optional: Clear the error immediately when the user starts typing in a field
+        if (errors[name]) {
+             // Use null to clear the specific error, allowing the field to look clean again
+             setErrors(prevErrors => ({ ...prevErrors, [name]: null }));
+        }
+    };
 
-    // Create the recipe object based on your backend model fields
-    const newRecipe = { recipeName, instructions, category };
-    if (imageUrl) newRecipe.imageUrl = imageUrl;
+    // --- Validation Logic ---
+    const validate = () => {
+        const newErrors = {};
 
-    try {
-      // 1. Send POST request to the API
-      const response = await api.post('/recipes', newRecipe);
+        // 1. Validate Recipe Name (Required)
+        if (!formData.name.trim()) {
+            newErrors.name = "Recipe name is required.";
+        }
 
-      // 2. If successful (201 Created), clear the form and update the list
-      setSuccess(true);
-      setRecipeName('');
-      setInstructions('');
-      setCategory('General');
-      setImageUrl('');
-      
-      // Call the function passed from the parent App component to update the list
-      handleAddRecipe(response.data);
+        // 2. Validate Prep Time (Required, Number, Positive Integer)
+        const prepTimeValue = formData.prepTime.trim();
+        const numericPrepTime = Number(prepTimeValue);
 
-    } catch (err) {
-      // Handle API errors (e.g., if a required field is missing)
-      console.error("Recipe POST error:", err);
-      setError('Failed to create recipe. Please ensure all fields are filled.');
-    }
-  };
+        if (!prepTimeValue) {
+            newErrors.prepTime = "Prep time is required.";
+        } else if (isNaN(numericPrepTime)) {
+            newErrors.prepTime = "Prep time must be a number.";
+        } else if (numericPrepTime <= 0) {
+            newErrors.prepTime = "Prep time must be a positive number of minutes.";
+        } else if (!Number.isInteger(numericPrepTime)) {
+            newErrors.prepTime = "Prep time should be a whole number.";
+        }
+        
+        // 3. Validate Ingredients (Required)
+        if (!formData.ingredients.trim()) {
+            newErrors.ingredients = "Ingredients are required.";
+        }
 
-  return (
-    <div className="form-container">
-      <h3>➕ Add New Recipe</h3>
-      
-      <form onSubmit={handleSubmit}>
-        {/* Recipe Name Field */}
-        <label>Recipe Name:</label>
-        <input
-          type="text"
-          value={recipeName}
-          onChange={(e) => setRecipeName(e.target.value)}
-          required
-        />
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-        {/* Instructions Field */}
-        <label>Instructions (Sensory Notes):</label>
-        <textarea
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          required
-        />
+    // --- Submission Handler (Unified and Corrected) ---
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        {/* Category Dropdown */}
-        <label>Special Category:</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="General">General</option>
-          <option value="Sensory-Friendly">Sensory-Friendly</option>
-          <option value="Gluten-Free">Gluten-Free</option>
-          <option value="Low-Sugar">Low-Sugar</option>
-        </select>
+        if (validate()) {
+            // Start loading state only if validation passes
+            setIsSubmitting(true);
+            try {
+                // Call the API via the onSubmit prop (This handles POST or PUT)
+                await onSubmit(formData); 
+                
+                // 🎯 SUCCESS MESSAGE
+                const message = initialData._id ? 'Recipe updated successfully!' : 'Recipe created successfully!';
+                showNotification(message, 'success'); 
+                
+                // If it's a new recipe, you might want to clear the form here.
+                // If it's an update, the parent component handles redirection/closing the modal.
+                
+            } catch (error) {
+                // 🎯 ERROR MESSAGE (Handle API submission failures)
+                showNotification('Error saving recipe. Please try again.', 'error');
+                console.error("API submission failed:", error);
+            } finally {
+                // Always stop loading, regardless of success or failure
+                setIsSubmitting(false);
+            }
+        } else {
+            // Validation failed: errors are already set by validate(), UI updates automatically
+            // No need for a network call or showing loading state.
+        }
+    };
 
-        {/* Image URL Input */}
-        <label>Image URL (optional):</label>
-        <input
-          type="url"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="https://example.com/image.png"
-          pattern="https?://.+"
-          title="Please enter a valid URL starting with http:// or https://"
-        />
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* --- Recipe Name Input --- */}
+            <div>
+                <label htmlFor="name" className="form-label">Recipe Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`form-input ${errors.name ? 'border-red-500 ring-red-500' : 'border-gray-300'}`}
+                    placeholder="Grandma's Chili"
+                    disabled={isSubmitting}
+                />
+                {errors.name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                )}
+            </div>
 
-        <button type="submit">Add Recipe</button>
-      </form>
-      
-      {/* Display Messages */}
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">Recipe added successfully!</div>}
-    </div>
-  );
-};
+            {/* --- Prep Time Input (Targeted Validation) --- */}
+            <div>
+                <label htmlFor="prepTime" className="form-label">Prep Time (minutes)</label>
+                <input
+                    type="text"
+                    id="prepTime"
+                    name="prepTime"
+                    value={formData.prepTime}
+                    onChange={handleChange}
+                    className={`form-input ${errors.prepTime ? 'border-red-500 ring-red-500' : 'border-gray-300'}`}
+                    placeholder="e.g., 30"
+                    disabled={isSubmitting}
+                />
+                {errors.prepTime && (
+                    <p className="text-red-500 text-sm mt-1">{errors.prepTime}</p>
+                )}
+            </div>
+
+            {/* --- Ingredients Textarea --- */}
+            <div>
+                <label htmlFor="ingredients" className="form-label">Ingredients</label>
+                <textarea
+                    id="ingredients"
+                    name="ingredients"
+                    value={formData.ingredients}
+                    onChange={handleChange}
+                    rows="4"
+                    className={`form-input ${errors.ingredients ? 'border-red-500 ring-red-500' : 'border-gray-300'}`}
+                    placeholder="List each ingredient on a new line..."
+                    disabled={isSubmitting}
+                />
+                {errors.ingredients && (
+                    <p className="text-red-500 text-sm mt-1">{errors.ingredients}</p>
+                )}
+            </div>
+            
+            {/* --- Category Input (Simple Select) --- */}
+            <div>
+                <label htmlFor="category" className="form-label">Category</label>
+                <select
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="form-input"
+                    disabled={isSubmitting}
+                >
+                    <option value="Dinner">Dinner</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Soup">Soup</option>
+                </select>
+            </div>
+
+            {/* --- Action Buttons --- */}
+            <div className="flex justify-end space-x-3 pt-4">
+                {/* Cancel button is optional, but good for UX */}
+                {onCancel && (
+                    <button 
+                        type="button" 
+                        onClick={onCancel} 
+                        className="btn-secondary"
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </button>
+                )}
+                
+                <button 
+                    type="submit" 
+                    className="btn-primary" 
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Saving...' : initialData._id ? 'Update Recipe' : 'Create Recipe'}
+                </button>
+            </div>
+        </form>
+    );
+}
 
 export default RecipeForm;

@@ -1,288 +1,236 @@
-:root {
-  font-family: sans-serif;
-  line-height: 1.5;
-  color-scheme: light dark;
-  color: #333;
-  background-color: #f7f7f7;
+/* ------------------------------------------- */
+/* 1. TAILWIND CSS DIRECTIVES (MOST CRITICAL)  */
+/* ------------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------- */
+/* 2. DESIGN TOKENS & CUSTOM CONFIG (BEST PRACTICE) */
+/* ------------------------------------------- */
+@layer base {
+  :root {
+    /* Light mode colors */
+    --color-bg-primary: 0 0% 100%;
+    --color-bg-secondary: 0 0% 98%;
+    --color-bg-surface: 0 0% 95%;
+    --color-text-primary: 240 5.9% 10%;
+    --color-text-secondary: 240 4.8% 15.9%;
+    --color-border: 240 5.3% 88.2%;
+    --color-primary: 221.2 83.2% 53.3%;
+    --color-primary-hover: 222.2 84% 60.9%;
+    
+    /* Dark mode colors */
+    --color-bg-primary-dark: 240 10% 3.9%;
+    --color-bg-secondary-dark: 240 3.7% 15.9%;
+    --color-bg-surface-dark: 240 3.7% 19.6%;
+    --color-text-primary-dark: 0 0% 98%;
+    --color-text-secondary-dark: 240 3.8% 46.1%;
+    --color-border-dark: 240 3.7% 26.1%;
+  }
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  font-family: 'Arial', sans-serif;
-  background-color: #f4f7f6;
-  color: #333;
+/* ------------------------------------------- */
+/* 3. GLOBAL RESET & LAYOUT (ENHANCED)         */
+/* ------------------------------------------- */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(var(--color-bg-secondary));
+    color: hsl(var(--color-text-primary));
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    line-height: 1.5;
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  #root, .App {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center content horizontally */
+    padding: 1rem; 
+    }
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--color-primary));
+    outline-offset: 2px;
+  }
 }
 
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* ------------------------------------------- */
+/* 4. CUSTOM UTILITIES & COMPONENTS (TAILWIND WAY) */
+/* ------------------------------------------- */
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent 
+           font-medium rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 
+           focus:ring-offset-2 transition-all duration-200 whitespace-nowrap;
+    background-color: hsl(var(--color-primary));
+    color: white;
+  }
+  
+  .btn-primary:hover:not(:disabled) {
+    background-color: hsl(var(--color-primary-hover));
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 border font-medium 
+           rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 
+           transition-all duration-200 whitespace-nowrap;
+    border-color: hsl(var(--color-border));
+    color: hsl(var(--color-text-primary));
+    background-color: hsl(var(--color-bg-primary));
+  }
+
+    .form-input {
+        @apply block w-full px-3 py-2 rounded-md shadow-sm transition-colors duration-200;
+        
+        /* Default border from your design tokens */
+        border: 1px solid hsl(var(--color-border)); 
+        color: hsl(var(--color-text-primary));
+
+        /* Custom focus styles for blue glow */
+        &:focus {
+            @apply ring-2 ring-blue-500 border-blue-500;
+        }
+            }
+
+    .form-label {
+        @apply block text-sm font-medium mb-1;
+        color: hsl(var(--color-text-primary));
+    }
+}
+  /* Cards */
+  .card {
+    @apply bg-white/80 dark:bg-black/50 backdrop-blur-sm shadow-lg rounded-2xl 
+           border border-white/20 dark:border-black/20 p-6;
+  }
+
+  /* Forms */
+  .form-input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+           placeholder-gray-400 focus:outline-none focus:ring-indigo-500 
+           focus:border-indigo-500 sm:text-sm transition-colors duration-200;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+
+
+/* ------------------------------------------- */
+/* 5. RESPONSIVE TYPOGRAPHY SCALE              */
+/* ------------------------------------------- */
+@layer components {
+  .text-display {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold leading-tight;
+  }
+  
+  .text-heading {
+    @apply text-2xl md:text-3xl lg:text-4xl font-bold leading-tight;
+  }
+  
+  .text-body {
+    @apply text-base md:text-lg leading-relaxed;
+  }
 }
 
-.container {
-  width: 100%;
-  max-width: 1000px;
-  margin: 40px auto;
-  padding: 20px;
-  text-align: center;
+/* ------------------------------------------- */
+/* 6. ENHANCED SCROLLBAR (CROSS-BROWSER)       */
+/* ------------------------------------------- */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--color-border)) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--color-border));
+    border-radius: 9999px;
+    background-clip: content;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--color-text-secondary));
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
 }
 
-h1 {
-  font-size: 2.2em;
-  line-height: 1.1;
-  color: #2a6f8a;
-  margin-bottom: 1.5rem;
-  border-bottom: 3px solid #c75b22;
-  padding-bottom: 10px;
-  margin-bottom: 30px;
+/* ------------------------------------------- */
+/* 7. DARK MODE SUPPORT (PROPER IMPLEMENTATION)*/
+/* ------------------------------------------- */
+@layer base {
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg-primary: var(--color-bg-primary-dark);
+      --color-bg-secondary: var(--color-bg-secondary-dark);
+      --color-bg-surface: var(--color-bg-surface-dark);
+      --color-text-primary: var(--color-text-primary-dark);
+      --color-text-secondary: var(--color-text-secondary-dark);
+      --color-border: var(--color-border-dark);
+    }
+  }
 }
 
-.recipe-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-  text-align: left;
-  padding-top: 10px;
+/* ------------------------------------------- */
+/* 8. PRINT STYLES (ACCESSIBILITY)             */
+/* ------------------------------------------- */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.6;
+  }
 }
 
-.recipe-card {
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  background-color: white;
-  transition: transform 0.2s;
-  position: relative;
+/* ------------------------------------------- */
+/* 9. LOADING & ANIMATIONS (SMOOTH)            */
+/* ------------------------------------------- */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
-.recipe-card:hover {
-  transform: translateY(-3px);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.recipe-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 8px 8px 0 0;
-  margin-bottom: 15px;
-}
-
-.recipe-card h2 {
-  color: #c75b22;
-  margin-top: 0;
-  font-size: 1.5em;
-}
-
-.id-text {
-  font-size: 0.8em;
-  color: #888;
-  margin-top: 10px;
-  word-break: break-word;
-}
-
-/* Card Header */
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.card-header h2 {
-  flex-grow: 1;
-  order: 3;
-  text-align: right;
-  font-size: 1.5rem;
-  line-height: 1.2;
-}
-
-/* Buttons */
-
-.delete-button,
-.edit-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  font-weight: bold;
-  align-self: flex-start;
-  transition: color 0.2s, background-color 0.2s;
-}
-
-.delete-button {
-  color: #c75b22;
-  font-size: 1.8em;
-  order: 1;
-}
-
-.delete-button:hover {
-  color: red;
-}
-
-.edit-button {
-  background-color: #5c7cfa;
-  color: white;
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-size: 0.9em;
-  order: 2;
-  margin-top: 5px;
-}
-
-.edit-button:hover {
-  background-color: #4a66d8;
-}
-
-/* Forms */
-
-.form-container {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.form-container h3 {
-  color: #c75b22;
-  text-align: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-.form-container form {
-  display: grid;
-  gap: 10px;
-}
-
-.form-container label {
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-.form-container input,
-.form-container textarea,
-.form-container select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.form-container textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-container button {
-  background-color: #2a6f8a;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1.1em;
-  margin-top: 20px;
-}
-
-.form-container button:hover {
-  background-color: #1e5a6b;
-}
-
-.error-message {
-  color: red;
-  margin-top: 15px;
-  text-align: center;
-}
-
-.success-message {
-  color: green;
-  margin-top: 15px;
-  text-align: center;
-}
-
-/* Edit Form */
-
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  border: 2px solid #5c7cfa;
-  border-radius: 8px;
-  background-color: #f0f4ff;
-}
-
-.edit-form label,
-.edit-form input,
-.edit-form textarea,
-.edit-form select {
-  margin-bottom: 5px;
-}
-
-.edit-form h4 {
-  margin-top: 0;
-  color: #5c7cfa;
-}
-
-.edit-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.save-button,
-.cancel-button {
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9em;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-
-.save-button {
-  background-color: #4caf50;
-  color: white;
-}
-.save-button:hover {
-  background-color: #45a049;
-}
-
-.cancel-button {
-  background-color: #f44336;
-  color: white;
-}
-.cancel-button:hover {
-  background-color: #d32f2f;
-}
-
-/* Loading and Error Messages */
-
-.loading,
-.error {
-  text-align: center;
-  padding: 20px;
-  font-size: 1.2em;
-}
-
-.error {
-  color: #f44336;
-  background-color: #ffe0e0;
-  border: 1px solid #f44336;
-  border-radius: 4px;
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
